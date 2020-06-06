@@ -28,13 +28,13 @@ create.rnaseq.analysis <- function(aggregation.level){
     # Experiment names for autoantibody aggregation level
     samples_summary[startsWith(sample, 'NT'), autoantibody := "Normal_muscle"]
     samples_summary[startsWith(sample, 'IBM'), autoantibody := "Inclusion_body"]
-    samples_summary[startsWith(sample, 'HMGCR'), autoantibody := "Necrotizing_myopathy_Anti-HMGCR"]
-    samples_summary[startsWith(sample, 'SRP'), autoantibody := "Necrotizing_myopathy_Anti-SRP"]
-    samples_summary[startsWith(sample, 'Mi2'), autoantibody := "Dermatomyositis_Anti-Mi2"]
-    samples_summary[startsWith(sample, 'NXP2'), autoantibody := "Dermatomyositis_Anti-NXP2"]
-    samples_summary[startsWith(sample, 'MDA5'), autoantibody := "Dermatomyositis_Anti-MDA5"]
-    samples_summary[startsWith(sample, 'TIF1'), autoantibody := "Dermatomyositis_Anti-TIF1g"]
-    samples_summary[startsWith(sample, 'Jo1'), autoantibody := "Antisynthetase_Syndrom_Anti-Jo1"]
+    samples_summary[startsWith(sample, 'HMGCR'), autoantibody := "Necrotizing_myopathy_Anti.HMGCR"]
+    samples_summary[startsWith(sample, 'SRP'), autoantibody := "Necrotizing_myopathy_Anti.SRP"]
+    samples_summary[startsWith(sample, 'Mi2'), autoantibody := "Dermatomyositis_Anti.Mi2"]
+    samples_summary[startsWith(sample, 'NXP2'), autoantibody := "Dermatomyositis_Anti.NXP2"]
+    samples_summary[startsWith(sample, 'MDA5'), autoantibody := "Dermatomyositis_Anti.MDA5"]
+    samples_summary[startsWith(sample, 'TIF1'), autoantibody := "Dermatomyositis_Anti.TIF1g"]
+    samples_summary[startsWith(sample, 'Jo1'), autoantibody := "Antisynthetase_Syndrom_Anti.Jo1"]
     
     # Experiment names for disease aggregation level
     samples_summary[autoantibody == "Normal_muscle", disease := "Normal_muscle"]
