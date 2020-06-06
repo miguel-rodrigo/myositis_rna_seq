@@ -1,0 +1,9 @@
+.Rproj.user/*
+Articles/*
+Llamadas/*
+Saved_results/*
+
+.RData
+.Rhistory
+*.odt
+*.pdf

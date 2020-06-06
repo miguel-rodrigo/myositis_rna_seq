@@ -1,0 +1,19 @@
+1. Comparar la tabla de resultados filtrada (only.mirna) con excel de resultados del paper y establecer una métrica de similitud (por ejemplo, ver la probabilidad de obtener nuestro vector de expresión suponiendo el suyo es real o algo así). Es decir, ANÁLISIS ESTADÍSTICO YA QUE SE TIENEN LOS VALORES DE FOLDCHANGE.
+
+2. Ver cuáles hay en literatura además de los que hay en ese artículo. Ver coincidencia con literatura. ES DECIR, ANÁLISIS SÍ O NO DE CUÁLES ME SALEN A MÍ.
+
+3. Añadir robustez al análisis usando otras técnicas además de deseq2 (extraerlas de intro2RNASeq).
+
+4. DONE!! Probar ese pipeline para otros tipos de experimento: normal vs. todo, normal vs. cada tipo de miositis agregada...
+
+5. Una vez que tenga todo eso, probar algún clasificador para cada uno de eso análisis el punto anterior.
+
+--------------------
+- DONE!! Crear una lista de mirs relevantes
+- DONE!! Barplotear el log2foldchange para esos mirnsas
+- Comparar con literatura
+
+--> DONE!! Los padj están hechos para usarse con todos los genes, hay que reajustar post-filtrado. (p.adjust(p-values, "BH"))
+-------------
+
+
