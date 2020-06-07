@@ -1,6 +1,6 @@
 1. Comparar la tabla de resultados filtrada (only.mirna) con excel de resultados del paper y establecer una métrica de similitud (por ejemplo, ver la probabilidad de obtener nuestro vector de expresión suponiendo el suyo es real o algo así). Es decir, ANÁLISIS ESTADÍSTICO YA QUE SE TIENEN LOS VALORES DE FOLDCHANGE.
 
-2. Ver cuáles hay en literatura además de los que hay en ese artículo. Ver coincidencia con literatura. ES DECIR, ANÁLISIS SÍ O NO DE CUÁLES ME SALEN A MÍ.
+2. DONE!! Ver cuáles hay en literatura además de los que hay en ese artículo. Ver coincidencia con literatura. ES DECIR, ANÁLISIS SÍ O NO DE CUÁLES ME SALEN A MÍ.
 
 3. Añadir robustez al análisis usando otras técnicas además de deseq2 (extraerlas de intro2RNASeq).
 
@@ -17,4 +17,4 @@
 -------------
 
 
-- Rework 1_differential_expression to contain only the functions, and make main be the place where they are called instead
+- DONE!! Rework 1_differential_expression to contain only the functions, and make main be the place where they are called instead
