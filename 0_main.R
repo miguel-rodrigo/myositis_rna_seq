@@ -1,5 +1,13 @@
-#### 1. Analisis por enfermedad y filtrar los que me salen + los que salen en literatura ####
+library(data.table)
+library(DESeq2)
+
+source("1_differential_expression.R")
 source("2_build_results_table.R")
+
+#### 1. Analisis por enfermedad y filtrar los que me salen + los que salen en literatura ####
+analyze.by.disease <- create.rnaseq.analysis(aggregation.level = "disease")
+results.by.disease <- analyze.by.disease()
+
 table.by.disease <- createResultsTable(results.by.disease)
 onlymirs.disease <- table.by.disease[gene.names %in% mirgenes]
 
@@ -21,6 +29,9 @@ getGenesQualityColumns(onlymirs.disease)
 
 
 #### 2. Como el (1) pero con autoanticuerpos ####
+analyze.by.autoantibody <- create.rnaseq.analysis(aggregation.level = "autoantibody")
+results.by.autoantibody <- analyze.by.autoantibody()
+
 table.by.aas <- createResultsTable(results.by.autoantibody)
 onlymirs.aas <- table.by.aas[gene.names %in% mirgenes]  # Check where mirrgenes is coming from
 
