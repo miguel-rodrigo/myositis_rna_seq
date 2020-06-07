@@ -17,3 +17,4 @@
 -------------
 
 
+- Rework 1_differential_expression to contain only the functions, and make main be the place where they are called instead
