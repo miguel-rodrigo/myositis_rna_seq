@@ -10,9 +10,18 @@
 #'
 #' @return ggplot2 object
 create.results.heatmap <- function(results.table){
+  require(data.table)
+  require(ggplot2)
+  
+  # Clean-up quality cols to avoid errors
+  quality.cols <- grep("^n_.+$", colnames(results.table), value=T)
+  results.table <- data.table::copy(results.table)
+  results.table[, (quality.cols) := NULL]
+  
+  # Get which columns contain each type of information
+  info.cols <- c("gene.names", quality.cols)
   pvalue.cols <- grep("pvalue", colnames(results.table), value=T)
   padj.cols <- grep("padj", colnames(results.table), value=T)
-  info.cols <- c("gene.names", "n_significant")
   
   foldchange.cols <- setdiff(colnames(results.table), c(pvalue.cols, padj.cols, info.cols))
   
@@ -50,17 +59,22 @@ create.results.heatmap <- function(results.table){
   
   # Draw!
   plot <- ggplot() +
-    scale_x_continuous("Disease") + scale_y_continuous("Gene", trans="reverse") +
+    # Axes
+    scale_x_continuous("Disease", expand=c(0,0)) +
+    scale_y_continuous("Gene",
+                       trans="reverse",
+                       breaks=seq_along(results.table[, unique(gene.names)]),
+                       labels=results.table[, unique(gene.names)],
+                       expand=c(0,0)) +
     # Plot values
     geom_rect(data = drawing.data,
               mapping=aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill=value)) +
-    # Set values with low padj as mustard color
+    # Set values with high padj as mustard-ish color
     geom_rect(data = bad.data,
               mapping=aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha = 1,
               fill="#E69F00") +
     # Remove ugly elements from the graph
     theme(axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
           axis.ticks.x=element_blank(),
           axis.ticks.y=element_blank(),
           panel.grid = element_blank(),
@@ -76,10 +90,8 @@ create.results.heatmap <- function(results.table){
                             vjust=0,
                             label=disease.name)
   }
-  
-  # Add names of the genes
-  # TODO: POR AQUÍ VA LA COSA!!
-  
+
+  return(plot)
 }
 
 

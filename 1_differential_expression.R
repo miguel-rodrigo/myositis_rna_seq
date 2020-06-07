@@ -14,7 +14,7 @@ create.rnaseq.analysis <- function(aggregation.level){
   require(data.table)
   
   # -- Assert that aggregation.level has a valid value
-  if(!aggregation.level %in% c("autoantibody", "disease") | length(aggregation.level != 1)){
+  if(!aggregation.level %in% c("autoantibody", "disease") | length(aggregation.level) != 1){
     stop("aggregation.level must be a character atomic vector with value either autoantibody or disease")
   }
   

@@ -3,6 +3,7 @@ library(DESeq2)
 
 source("1_differential_expression.R")
 source("2_build_results_table.R")
+source("3_plots.R")
 
 #### 1. Analisis por enfermedad y filtrar los que me salen + los que salen en literatura ####
 analyze.by.disease <- create.rnaseq.analysis(aggregation.level = "disease")
@@ -21,11 +22,13 @@ getGenesQualityColumns(onlymirs.disease)
 relevant.mirs <- onlymirs.disease[n_relevant >= 1, gene.names]
 literature.mirs <- fread("Datos/literature_mir_genes.csv")$gene_name
 
-mirs.in.common.aas <- intersect(relevant.mirs, literature.mirs)
+mirs.in.common.disease <- intersect(relevant.mirs, literature.mirs)
 
 filtered.disease <- onlymirs.disease[gene.names %in% union(relevant.mirs, literature.mirs)]
 set.re.adjusted.pvalues(filtered.disease)
-getGenesQualityColumns(onlymirs.disease)
+getGenesQualityColumns(filtered.disease)
+
+plot.disease <- create.results.heatmap(filtered.disease)
 
 
 #### 2. Como el (1) pero con autoanticuerpos ####
@@ -49,7 +52,8 @@ mirs.in.common.aas <- intersect(relevant.mirs, literature.mirs)
 
 filtered.aas <- onlymirs.aas[gene.names %in% union(relevant.mirs, literature.mirs)]
 set.re.adjusted.pvalues(filtered.aas)
-getGenesQualityColumns(onlymirs.aas)
+getGenesQualityColumns(filtered.aas)
 
-# TODO: Create the plots (2nd easiest but almost 1st)
+plot.aas <- create.results.heatmap(filtered.aas)
+
 # TODO: Reshape into markdown to show things more easily (a bit harder but also easy)
