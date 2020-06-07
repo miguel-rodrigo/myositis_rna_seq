@@ -14,9 +14,15 @@
 #'
 set.re.adjusted.pvalues <- function(results.table){
   pvalues.cols <- grep("pvalue", colnames(results.table), value=T)
+  padj.cols <- grep("padj", colnames(results.table), value=T)
   
-  for(column in pvalues.cols){
-    set(results.table, j=column, p.adjust(`[[`(results.table, column), method="BH"))
+  for(i in seq_along(pvalues.cols)){
+    this.pvalue.col <- pvalues.cols[[i]]
+    this.padj.col <- padj.cols[[i]]
+    
+    set(results.table,
+        j = this.padj.col,
+        value = p.adjust(`[[`(results.table, this.pvalue.col), method="BH"))
   }
   
   invisible(results.table)
