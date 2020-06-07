@@ -11,9 +11,9 @@
 #' @return results.table
 createResultsTable <- function(results.list){
   fold_change_table <- data.table()
-  invisible(lapply(seq_along(results), function(i){
-    this.name <- names(results)[i]
-    this.group <- results[[i]]
+  invisible(lapply(seq_along(results.list), function(i){
+    this.name <- names(results.list)[i]
+    this.group <- results.list[[i]]
     
     fold_change_table[, as.character(this.name) := this.group$log2FoldChange]
     fold_change_table[, paste0(this.name, "_pvalue") := this.group$pvalue]
@@ -38,6 +38,10 @@ createResultsTable <- function(results.list){
 #' 
 #' @return data.table with the quality columns added
 getGenesQualityColumns <- function(results.table){
+  # First, we need to clean-up old quality columns (match everything starting by n_)
+  quality.cols <- grep("^n_.+$", colnames(results.table), value=TRUE)
+  results.table[, (quality.cols) := NULL]
+  
   # If it matches nothing, it must be a fold change column:
   fold.change.cols <- grep("padj|pvalue|gene.names", colnames(results.table),
                            value=T,
@@ -48,11 +52,12 @@ getGenesQualityColumns <- function(results.table){
   padj.cols <- grep("padj", colnames(results.table),
                     value=T)
   
-  results.table[, n_nas_value := Reduce("+", lapply(.SD, is.na)), .SDcols=change.value.cols]
+  results.table[, n_nas_value := Reduce("+", lapply(.SD, is.na)), .SDcols=fold.change.cols]
   results.table[, n_nas_pvalue := Reduce("+", lapply(.SD, is.na)), .SDcols=pvalue.cols]
   results.table[, n_nas_padj := Reduce("+", lapply(.SD, is.na)), .SDcols=padj.cols]
+  results.table[, n_relevant := Reduce("+", lapply(.SD, `<=`, 0.05)), .SDcols=padj.cols]
   
-  return(results.table)
+  invisible(results.table)
 }
 
 
