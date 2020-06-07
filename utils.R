@@ -1,35 +1,3 @@
-#' Re-adjust p-values for a subset of RNAs
-#' 
-#' DeSEQ2 adjust p-values of the experiments using B-H based on the vector of p-values of
-#' the whole list of genes. Since we are interested in only a fraction of this list, we
-#' need to perform this same adjustment using only the vector of p-values associated with
-#' the pertinent genes.
-#' 
-#' @param results.table: Data.table containing at least one column of p-values for each of
-#' the experiments, with one row for each gene. These columns must include "pvalue" in
-#' their names.
-#' 
-#' @return Silently returns the modified element. This function uses data.table's set*
-#' syntax, and therefore the element is modified in-place.
-#'
-set.re.adjusted.pvalues <- function(results.table){
-  pvalues.cols <- grep("pvalue", colnames(results.table), value=T)
-  padj.cols <- grep("padj", colnames(results.table), value=T)
-  
-  for(i in seq_along(pvalues.cols)){
-    this.pvalue.col <- pvalues.cols[[i]]
-    this.padj.col <- padj.cols[[i]]
-    
-    set(results.table,
-        j = this.padj.col,
-        value = p.adjust(`[[`(results.table, this.pvalue.col), method="BH"))
-  }
-  
-  invisible(results.table)
-}
-
-
-
 #' Create results heatmap
 #' 
 #' Draws a rectangular matrix with columns each of the diseases (or autoantibodies) and
