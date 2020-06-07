@@ -53,4 +53,3 @@ getGenesQualityColumns(onlymirs.aas)
 
 # TODO: Create the plots (2nd easiest but almost 1st)
 # TODO: Reshape into markdown to show things more easily (a bit harder but also easy)
-# TODO: Reshape 1_... to contain the functions and call them here (easiest)
