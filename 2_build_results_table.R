@@ -9,7 +9,7 @@
 #' the desired genes in next steps on the analysis
 #'
 #' @return results.table
-createResultsTable <- function(results.list, gene.names){
+createResultsTable <- function(results.list){
   fold_change_table <- data.table()
   invisible(lapply(seq_along(results), function(i){
     this.name <- names(results)[i]
@@ -20,6 +20,7 @@ createResultsTable <- function(results.list, gene.names){
     fold_change_table[, paste0(this.name, "_padj") := this.group$padj]
   }))
   
+  gene.names <- results.list[[1]]@rownames
   fold_change_table[, gene.names := gene.names]
   setcolorder(fold_change_table, "gene.names")
   
