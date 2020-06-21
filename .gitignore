@@ -7,3 +7,4 @@ Saved_results/*
 .Rhistory
 *.odt
 *.pdf
+.~lock*
