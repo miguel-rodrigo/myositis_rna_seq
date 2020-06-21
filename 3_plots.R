@@ -64,8 +64,7 @@ create.results.heatmap <- function(results.table){
     scale_y_continuous("Gene",
                        trans="reverse",
                        breaks=seq_along(results.table[, unique(gene.names)]),
-                       labels=results.table[, unique(gene.names)],
-                       expand=c(0,0)) +
+                       labels=results.table[, unique(gene.names)]) +
     # Plot values
     geom_rect(data = drawing.data,
               mapping=aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill=value)) +
@@ -85,7 +84,7 @@ create.results.heatmap <- function(results.table){
     disease.name <- foldchange.cols[[i]]
     plot <- plot + annotate("text",
                             x=(i-0.5)*rect.width,
-                            y=-rect.height*2,
+                            y=-rect.height,
                             hjust=0.5,
                             vjust=0,
                             label=disease.name)
