@@ -1,0 +1,156 @@
+---
+title: "Analysis"
+author: "Miguel"
+date: "8 de junio de 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(data.table)
+library(DESeq2)
+
+source("1_differential_expression.R")
+source("2_build_results_table.R")
+source("3_plots.R")
+```
+
+## Intro
+
+Se han hecho dos análisis, uno agrupando por enfermedad (dermatomiositis, necrotizante...) y otro por tipo de autoanticuerpo (anti-Mi2, anti-jo1...).
+
+Cada análisis consiste en los siguientes pasos:
+  1. Realizar la estimación de expresión diferencial de cada muestra, agrupando los experimentos bien por
+  tipo de enfermedad vs. control, bien por tipo de autoanticuerpo vs. control
+  2. Se han filtrado los genes para incluir únicamente los microRNAs.
+  3. Tras filtrar, se han recalculado los p-valores ajustados mediante Benjamini-Hochberg para tener en
+  cuenta que la colección de contrastes de hipótesis es mucho menor. Se ha empleado este método por ser
+  el mismo que emplea el algoritmo de DESeq2.
+  4. A continuación se han tomado aquellos microRNAs cuya expresión diferencial se ha estimado significativamente diferente con un p-valor ajustado menor de 0.05. Se ha combinado esta lista de microRNAs relevantes con una lista creada a mano a partir de los microRNAs de la literatura.
+  5. Se ha dibujado el valor de cambio medio (en logaritmo en base dos) por microRNA y enfermedad/autoanticuerpo, sombreando de amarillo aquellos cuyo p-valor ajustado sea demasiado grande.
+  
+# Notas
+- Este documento es sólo un resumen muy breve con la intención de mencionar qué se ha hecho en la etapa de análisis, pero sé que en la memoria debo incluir mucha más información.
+- Los detalles de código se han abstraído al máximo de este resumen, pero serán incluídos en la memoria
+- El abanico de papers de los que extraer microRNAs relevantes se ha ampliado con respecto a la bibliografía que entregué, ya que encontré una tesis llena de referencias a estos artículos, y encontré algunos microRNAs más, y sobre todo corroboraciones de algunos de los mismos miRNAs.
+
+  
+  
+## Análisis por enfermedad
+Se han agregado los experimentos en paciente sano vs. IBM, miopatía necrotizante, dermatomiositis o síndrome antisintetasa Jo-1.
+
+```{r analysis_disease_level}
+analyze.by.disease <- create.rnaseq.analysis(aggregation.level = "disease")
+results.by.disease <- analyze.by.disease()
+
+table.by.disease <- createResultsTable(results.by.disease)
+table.by.disease
+```
+
+Cargamos la lista de microRNAs pre-guardada (todos aquellos genes que incluyen MIR en el nombre). Filtramos usando esa lista y re-ajustamos p-valores. A continuación, realizamos un conteo de cuántos p-valores ajustados son menores de 0.05 para cada gen para cada tipo de enfermedad de las 4 que hay. Si este número es mayor que 1, es decir, el microRNA presenta una cambio significativo para al menos una enfermedad, nos lo quedamos.
+
+```{r get_good_microRNAs}
+mirna.genes <- fread("Datos/all_mir_genes.csv")$mirgenes
+onlymirs.disease <- table.by.disease[gene.names %in% mirna.genes]
+
+set.re.adjusted.pvalues(onlymirs.disease)
+
+# Count how many times the p-adj-values are good, how many NAs...
+suppressWarnings(getGenesQualityColumns(onlymirs.disease))
+
+# We take those which are relevant for at least 1 disease
+relevant.mirs <- onlymirs.disease[n_relevant >= 1, gene.names]
+
+relevant.mirs
+```
+
+Seguidamente, cargamos los microRNAs recopilados de la literatura, y vemos cuáles se encuentran en ambos conjuntos.
+```{r}
+literature.mirs <- fread("Datos/literature_mir_genes.csv")$gene_name
+
+mirs.in.common.disease <- intersect(relevant.mirs, literature.mirs)
+mirs.in.common.disease
+```
+Algunos de los microRNAs más citados aparecen, pero también hay algunas faltas notables, entre los que se encuentran:
+- miR-126
+- miR-133a
+- miR-146a/b
+- miR-214
+- miR-221
+- miR-222
+- miR-223
+- miR-381 (éste parece que sólo ha sido encontrado en un paper, pero es bastante citado)
+- miR-7
+
+Se deberían revisar los valores obtenidos de nivel de expresión diferencial de cada uno de ellos de manera manual para ver que estos negativos verdaderamente tienen sentido con los datos, y no son un artificio estadístico de no haber sido riguroso por error en alguna parte antes de ponerme a esribir.
+
+Finalmente, filtramos para quedarnos con el conjunto unión entre los encontrados aquí y los de la literatura, y se dibujan los resultados. Se han sombreado de amarillo los que tienen un p-adj mayor que 0.05, pero escribiendo esto me he dado cuenta que no tiene sentido, porque de esa manera estoy descartando todos los de la literatura que no han sido determinados como significativos aquí. Quizá convendría realizar varios plots sombreando y sin sombrear.
+
+```{r}
+# which are the relevant ones
+# --- union ---
+# which are the literature ones
+filtered.disease <- onlymirs.disease[gene.names %in% union(relevant.mirs, literature.mirs)]
+
+set.re.adjusted.pvalues(filtered.disease)
+getGenesQualityColumns(filtered.disease)
+
+plot.disease <- create.results.heatmap(filtered.disease)
+
+plot.disease
+```
+
+El plot no se ve muy bien en el R-markdown, así que lo incluyo también como imagen
+![](Plot/results_disease.png)
+
+
+## Análisis por autoanticuerpo.
+Se han agregado los experimentos en paciente sano vs. cada tipo de autoanticuerpo:
+- IBM (no tiene autoanticuerpos asociados)
+- Miopatía necrotizante
+  - Anti-HMGCR
+  - Anti-SRP
+- Dermatomiositis
+  - Anti-Mi2
+  - Anti-NXP2
+  - Anti-MDA5
+- Síndrome antisintetasa Jo-1
+  - Anti-Jo1
+  
+```{r}
+analyze.by.autoantibody <- create.rnaseq.analysis(aggregation.level = "autoantibody")
+results.by.autoantibody <- analyze.by.autoantibody()
+
+table.by.aas <- createResultsTable(results.by.autoantibody)
+
+mirna.genes <- fread("Datos/all_mir_genes.csv")$mirgenes
+onlymirs.aas <- table.by.aas[gene.names %in% mirna.genes]  # Check where mirrgenes is coming from
+
+# which are the relevant ones
+# --- union ---
+# which are the literature ones
+set.re.adjusted.pvalues(onlymirs.aas)
+getGenesQualityColumns(onlymirs.aas)
+
+# We take those which are relevant for at least 1 autoantibody
+relevant.mirs <- onlymirs.aas[n_relevant >= 1, gene.names]
+literature.mirs <- fread("Datos/literature_mir_genes.csv")$gene_name
+
+mirs.in.common.aas <- intersect(relevant.mirs, literature.mirs)
+
+filtered.aas <- onlymirs.aas[gene.names %in% union(relevant.mirs, literature.mirs)]
+set.re.adjusted.pvalues(filtered.aas)
+getGenesQualityColumns(filtered.aas)
+
+plot.aas <- create.results.heatmap(filtered.aas)
+```
+
+Los microRNAs en común con la literatura en este caso son iguales más el 223, ya mencionado arriba como faltante
+```{r}
+mirs.in.common.aas
+```
+
+Y el plot para los niveles de expresión diferencial vs. músculo normal
+
+![](Plot/results_autoantibodies.png)
