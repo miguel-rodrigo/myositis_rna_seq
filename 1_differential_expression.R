@@ -57,6 +57,17 @@ create.rnaseq.analysis <- function(aggregation.level){
     samples_summary[startsWith(autoantibody, "Dermatomyositis"), disease := "Dermatomyositis"]
     samples_summary[startsWith(autoantibody, "Antisynthetase"), disease := "Antisynthetase"]
     
+    # TODO: Temporary fix for plots
+    samples_summary[startsWith(sample, 'NT'), autoantibody := "Normal_muscle"]
+    samples_summary[startsWith(sample, 'IBM'), autoantibody := "Inclusion_body"]
+    samples_summary[startsWith(sample, 'HMGCR'), autoantibody := "Anti.HMGCR"]
+    samples_summary[startsWith(sample, 'SRP'), autoantibody := "Anti.SRP"]
+    samples_summary[startsWith(sample, 'Mi2'), autoantibody := "Anti.Mi2"]
+    samples_summary[startsWith(sample, 'NXP2'), autoantibody := "Anti.NXP2"]
+    samples_summary[startsWith(sample, 'MDA5'), autoantibody := "Anti.MDA5"]
+    samples_summary[startsWith(sample, 'TIF1'), autoantibody := "Anti.TIF1g"]
+    samples_summary[startsWith(sample, 'Jo1'), autoantibody := "Syndrom_Anti.Jo1"]
+    
     # Which samples are control group and which ones are not?
     samples_summary[, group := fifelse(startsWith(sample, "NT"), "control", "treated")]
     
