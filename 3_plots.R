@@ -138,3 +138,80 @@ plot.fold.change <- function(results.table){
 
 
 #' Plot counts for every sample of every group
+plot.counts <- function(count.matrix, top.genes, samples.summary, aggregation){
+  require(data.table)
+  require(ggplot2)
+  require(ggrepel)
+
+  #TODO: this filter should be outside the function
+  gene.list <- top.genes[rank<=15, unique(gene)]
+  top.genes[, is.relevant := pvalue <= 0.05]
+  
+  
+  # Assert aggregation value is correct
+  if(!aggregation %in% c("disease", "autoantibody")){
+    stop("Aggregation levels supported: disease, autoantibody. Please change aggregation type")
+  }
+  
+  # Format counts into a better shape
+  casted.counts <- melt(count.matrix,
+                        id.vars="gene_id",
+                        variable.name="group",
+                        value.name="count")
+  
+  # Filter by good genes
+  casted.counts <- casted.counts[gene_id %in% gene.list]
+  
+  # Translate count group type to the correct aggregation level
+  aggregations.dictionary <- unique(samples.summary[, .(autoantibody, disease, fixed_sample)])
+  casted.counts <- merge(casted.counts, aggregations.dictionary[, c("fixed_sample", aggregation), with=F],
+                         by.x="group", by.y="fixed_sample")
+  
+  
+  # Add whether or not a gene is relevant for each element in the group
+  casted.counts <- merge(casted.counts, top.genes[, c("gene", aggregation, "is.relevant"), with=F],
+                         by.x=c("gene_id", aggregation), by.y=c("gene", aggregation), all.x=TRUE)
+  
+  
+  plots <- lapply(gene.list, function(gene){
+    this.data <- casted.counts[gene_id == gene]
+    
+    plot <- ggplot(data=this.data, mapping=aes_string(x=aggregation, y="count")) +
+      geom_boxplot(outlier.shape = NA) +
+      geom_jitter(mapping=aes(color=is.relevant), width=0.2) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1.1, hjust=0.85)) +
+      ggtitle(gene) + scale_color_manual(values = c("TRUE" = "#00BFC4", "FALSE" = "#F8766D"), na.value="grey")
+  })
+  
+  # 1. Extraer la leyenda de uno que tenga falses y trues
+  g_legend<-function(a.gplot){
+    tmp <- ggplot_gtable(ggplot_build(a.gplot))
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+    legend <- tmp$grobs[[leg]]
+    return(legend)
+  }
+  # Use the first legend that has TRUE, FALSE and NA. If none of them have all three,
+  # then it won't matter and just using the last one should do.
+  for(p in plots){
+    my.legend <- g_legend(p)
+    num.elements.in.legend <- length(grep("label", my.legend$grobs[[1]]$layout$name))
+    
+    if(num.elements.in.legend == 3){
+      break()
+    }
+  }
+  
+  # 2. Quitar leyenda a todos los plots con --->> """ + theme(legend.position="none") """
+  for(i in seq_along(plots)){
+    plots[[i]] <- plots[[i]] + theme(legend.position="none") 
+  }
+  
+  # 3. Agregar fila final inferior con la leyenda y hacerla más pequeña con heights = c(10, 1)
+  ml <- marrangeGrob(plots, ncol=4, nrow=2, top="")
+  
+  for(p in ml){
+    grid.arrange(p, my.legend, ncol=2,widths=c(10, 1))
+  }
+  
+  # TODO: instead of drawing, store it in a variable (and maybe also on disk)
+}
