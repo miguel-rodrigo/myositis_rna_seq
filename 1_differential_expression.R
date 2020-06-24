@@ -39,6 +39,8 @@ create.rnaseq.analysis <- function(aggregation.level){
       sample = colnames(count_matrix)
     )
     
+    # TODO: Move this samples summary creation outside of this closure and remove the closure all together
+    
     # Experiment names for autoantibody aggregation level
     samples_summary[startsWith(sample, 'NT'), autoantibody := "Normal_muscle"]
     samples_summary[startsWith(sample, 'IBM'), autoantibody := "Inclusion_body"]
