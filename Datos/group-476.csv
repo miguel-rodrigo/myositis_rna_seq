@@ -1,4 +1,4 @@
-sep=,
+
 "HGNC ID (gene)","Approved symbol","Approved name","Previous symbols","Aliases","Chromosome"
 "HGNC:31586","MIR21","microRNA 21","MIRN21","hsa-mir-21,MIR-21","17q23.1"
 "HGNC:31599","MIR22","microRNA 22","MIRN22","hsa-mir-22","17p13.3"
