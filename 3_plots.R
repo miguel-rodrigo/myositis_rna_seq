@@ -94,3 +94,47 @@ create.results.heatmap <- function(results.table){
 }
 
 
+#' Plot fold change of every gene in the result table, classified by group (IBM, DM,...)
+#' @param results.table
+#' 
+#' @return ggplot2 plot object
+plot.fold.change <- function(results.table){
+  require(data.table)
+  require(ggplot2)
+  require(ggrepel)
+  
+  # TODO: Make the column names extraction an external function somewhere (like utils.R)
+  # Clean-up quality cols to avoid errors
+  quality.cols <- grep("^n_.+$", colnames(results.table), value=T)
+  results.table <- data.table::copy(results.table)
+  results.table[, (quality.cols) := NULL]
+  
+  # Get which columns contain each type of information
+  info.cols <- c("gene.names", quality.cols)
+  pvalue.cols <- grep("pvalue", colnames(results.table), value=T)
+  padj.cols <- grep("padj", colnames(results.table), value=T)
+  foldchange.cols <- setdiff(colnames(results.table), c(pvalue.cols, padj.cols, info.cols))
+  
+  # TODO: Make this casting process into an external funcion somewhere (like utils.R)
+  by.group <- lapply(seq_along(foldchange.cols), function(i){
+    data.table(gene = results.table[['gene.names']],
+               disease = foldchange.cols[[i]],
+               fold.change = results.table[[foldchange.cols[[i]]]],
+               pvalue = results.table[[pvalue.cols[[i]]]])
+  })
+  casted.results <- rbindlist(by.group)
+  
+  # TODO: Make this ranking and re-adjusting into an external function, maybe the same function as the casting above
+  top.genes <- casted.results[, rank := frankv(pvalue), by=disease]
+  top.genes[, padj := p.adjust(pvalue, "BH"), by=disease]
+  
+  plot <- ggplot(data=top.genes[rank<=15], mapping=aes(x=disease, y=fold.change)) +
+    geom_jitter(data=top.genes[rank>15], mapping=aes(color=rank)) +
+    geom_jitter(position = position_jitter(seed=123, width=0.2), color="#132C44") +
+    geom_text_repel( aes(label=gene), position = position_jitter(seed=123, width=0.2), min.segment.length = 0.1)
+  
+  return(plot)
+}
+
+
+#' Plot counts for every sample of every group
